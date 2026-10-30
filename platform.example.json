@@ -1,0 +1,18 @@
+{
+  "membership_tiers": {
+    "free": {"label": "基础会员", "quota": 20},
+    "vip": {"label": "标准会员", "quota": 200},
+    "svip": {"label": "高级会员", "quota": 0}
+  },
+  "default_tier": "free",
+  "timezone": "Asia/Shanghai",
+  "session_days": 30,
+  "invite_expiry_hours": 72,
+  "invite_daily_limit": 20,
+  "usage_actions": {
+    "research": "研究生成",
+    "pipeline": "研究流水线",
+    "memory": "知识库问答",
+    "extract": "结论提取"
+  }
+}

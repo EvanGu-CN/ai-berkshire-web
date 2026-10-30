@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>AI Berkshire Web</title>
+  <defs>
+    <linearGradient id="field" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#234e4b"/><stop offset="1" stop-color="#102d36"/></linearGradient>
+    <linearGradient id="gold" x1="12" y1="10" x2="51" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#f6e8bf"/><stop offset="1" stop-color="#bc9254"/></linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#field)"/>
+  <rect x=".75" y=".75" width="62.5" height="62.5" rx="15.25" stroke="#dbcba8" stroke-opacity=".28" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="23" stroke="#e7dbba" stroke-opacity=".3" stroke-width="1"/>
+  <path d="M13.5 45 25 19l11.5 26h-5.4l-2-5h-8.4l-2.1 5Zm9-9.5h4.8l-2.4-6.2Z" fill="url(#gold)"/>
+  <path d="M39 19h6.2c4.1 0 6.5 2.4 6.5 6 0 2.4-1.2 4.1-3.1 5 2.7.8 4.2 3 4.2 6 0 4.1-2.9 6.5-7.4 6.5H39Zm4.7 4.4v4.9h1.1c1.6 0 2.4-.9 2.4-2.5 0-1.6-.8-2.4-2.4-2.4Zm0 9.1v5.6h1.4c1.9 0 2.9-1 2.9-2.8 0-1.9-1-2.8-2.9-2.8Z" fill="url(#gold)"/>
+  <path d="m31.9 10 1.6 3.7-1.6 2-1.6-2Z" fill="#e9d6a6"/>
+</svg>

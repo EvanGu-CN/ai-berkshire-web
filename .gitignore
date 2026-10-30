@@ -1,0 +1,48 @@
+# ============ 敏感数据（严禁入库） ============
+# 应用数据：API Key / 用户密码哈希 / 会话 token / 历史库 / 1GB 索引
+ai-berkshire-web/data/
+ai-berkshire-web/shared-reports/
+reports/
+exports/
+backups/
+platform.local.json
+# Local database copies and migration/deployment backup artifacts
+*.db
+*.db-wal
+*.db-shm
+*.db.bak*
+backup*.zip
+my-site.zip
+data.tar.gz
+continuity.json
+
+# Agent 工作区记忆
+.workbuddy/
+
+# ============ 运行时产物 ============
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# ============ ai-berkshire：上游代码不入库，运行时拉取 ============
+# 技能框架 + 官方报告来自 github.com/xbtlin/ai-berkshire
+# 首次启动自动克隆；管理员可在网页「报告库 → 同步官方仓库」更新
+ai-berkshire/
+
+# ============ 旧版 ai-berkshire 的 git 元数据（扁平化后保留的备份）============
+.git.bak/
+
+
+# Development and local credentials
+.pytest_cache/
+.venv/
+.local/
+node_modules/
+.env
+.env.*
+!.env.example
+!.env.app.example
+coverage/
+playwright-results/

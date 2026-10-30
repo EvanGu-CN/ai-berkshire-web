@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Berkshire Web · 价值研究工作台</title>
+<link rel="icon" href="/static/brand/favicon.ico?v=2" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/png" href="/static/brand/favicon-32.png?v=2" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg?v=2" sizes="any">
+<link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png?v=2" sizes="180x180">
+<link rel="preload" as="image" href="/static/brand/mark.svg">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/workspace.css">
+<meta name="theme-color" content="#132c36">
+</head>
+<body>
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+<!-- 登录层（多用户版） -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-brand">
+      <div class="brand-logo" aria-hidden="true"><img src="/static/brand/mark.svg" width="56" height="56" alt=""></div>
+      <div>
+        <div class="brand-name">AI Berkshire <span class="brand-wordmark-accent">Web</span></div>
+        <div class="brand-sub">Research Workspace</div>
+      </div>
+    </div>
+    <div class="eyebrow">VALUE INVESTING · LONG-TERM THINKING</div>
+    <h2 id="login-title">回到你的研究空间</h2>
+    <p class="login-intro">整理信息、验证判断，让长期投资有据可循。</p>
+    <form id="auth-form">
+    <div class="field">
+      <label for="login-username">用户名</label>
+      <input type="text" id="login-username" placeholder="3-32 个字符" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="login-password">密码</label>
+      <input type="password" id="login-password" placeholder="输入密码" autocomplete="current-password">
+    </div>
+    <div class="field" id="invite-field" hidden><label for="login-invite">推荐码</label><input id="login-invite" maxlength="64" autocomplete="off" placeholder="粘贴会员分享的推荐码"></div>
+    <div class="field" id="password-confirm-field" hidden><label for="login-password-confirm">确认密码</label><input type="password" id="login-password-confirm" autocomplete="new-password" placeholder="再次输入密码"></div>
+    <div class="hint" id="login-msg" role="status" aria-live="polite" style="min-height:18px"></div>
+    <div class="login-actions">
+      <button type="submit" class="btn primary" id="btn-login">登录</button>
+      <button type="button" class="btn" id="btn-register">注册新账号</button>
+    </div>
+    </form>
+    <div class="login-foot" id="login-foot">账号、模型配置和个人历史独立保存</div>
+  </div>
+</div>
+
+<div class="layout">
+  <button class="sidebar-scrim" aria-label="关闭导航" hidden></button>
+  <aside class="sidebar" id="workspace-sidebar" aria-label="工作台导航">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true"><img src="/static/brand/mark.svg" width="42" height="42" alt=""></div>
+      <div>
+        <div class="brand-name">AI Berkshire <span class="brand-wordmark-accent">Web</span></div>
+        <div class="brand-sub">Research Workspace</div>
+      </div>
+    </div>
+    <nav class="nav" aria-label="主导航">
+      <div class="nav-label">研究空间</div>
+      <button class="nav-item active" data-page="research"><i class="nav-ic">📝</i><span>新建研究</span></button>
+      <button class="nav-item" data-page="pipeline"><i class="nav-ic">🔬</i><span>研究流水线</span></button>
+      <button class="nav-item" data-page="memory"><i class="nav-ic">🧠</i><span>研究记忆</span></button>
+      <button class="nav-item" data-page="timeline"><i class="nav-ic">📈</i><span>观点时间线</span></button>
+      <button class="nav-item" data-page="history"><i class="nav-ic">🗂</i><span>研究历史</span></button>
+      <button class="nav-item" data-page="reports"><i class="nav-ic">📚</i><span>报告库</span></button>
+      <div class="nav-label">账户与管理</div>
+      <button class="nav-item" data-page="account"><i class="nav-ic">◎</i><span>我的账户</span></button>
+      <button class="nav-item" data-page="users" id="nav-users" style="display:none"><i class="nav-ic">👥</i><span>用户管理</span></button>
+      <button class="nav-item" data-page="settings"><i class="nav-ic">⚙️</i><span>设置</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <div id="api-status">检测中…</div>
+      <div class="user-row">
+        <span id="current-user"></span>
+        <button class="btn small" id="btn-logout" style="display:none">退出</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-content" tabindex="-1">
+    <div class="workspace-bar"><div class="bar-location"><button id="menu-toggle" class="icon-button" aria-controls="workspace-sidebar" aria-expanded="false" aria-label="打开导航">☰</button><span class="bar-product">工作台</span><span class="bar-divider">/</span><span id="page-location">新建研究</span></div><button id="quota-pill" class="quota-pill" title="查看账户与今日用量">加载账户…</button></div>
+    <!-- ============ 新建研究 ============ -->
+    <section class="page active" id="page-research">
+      <header class="page-head">
+        <div class="eyebrow">RESEARCH WORKSPACE</div><h1>把信息，变成有依据的判断。</h1>
+        <p>选择研究方法，提出你的问题。研究成果会自动归档，便于复用与复盘。</p>
+      </header>
+
+      <div class="setup-notice" id="setup-notice" hidden></div>
+      <div class="research-steps" aria-label="研究步骤"><span><b>01</b> 选择研究方法</span><span><b>02</b> 明确研究对象</span><span><b>03</b> 阅读与复盘</span></div>
+      <div class="research-layout">
+        <div class="card skill-panel">
+          <div class="panel-heading"><h2 class="panel-title">研究方法</h2><span class="muted" id="skill-count"></span></div>
+          <label class="sr-only" for="skill-search">搜索研究方法</label><input type="search" id="skill-search" placeholder="搜索方法、场景或关键词…">
+          <div class="skill-filter" id="skill-filters" aria-label="研究方法分类"></div>
+          <div id="skill-catalog" class="skill-catalog"></div>
+        </div>
+
+        <div class="card run-panel">
+          <h2 class="panel-title">研究对象与偏好</h2>
+
+          <div class="selected-skill" id="selected-skill">
+            <div class="ss-empty">先选择一种研究方法<span>从研究方法中选择一个起点</span></div>
+          </div>
+
+          <label class="control-label" for="research-args">研究对象或问题</label><input type="text" id="research-args" class="run-input"
+                 placeholder="请先选择研究方法" disabled>
+
+          <div class="example-row" id="example-row" style="display:none">
+            <span class="example-label">示例</span>
+            <code class="example-text" id="example-text" title="点击填入输入框"></code>
+          </div>
+
+          <!-- 重复检测提示（软提示，不拦截生成） -->
+          <section class="dedup-hint" id="dedup-hint" style="display:none" aria-label="已有研究参考">
+            <div class="dup-head"><strong>已有研究参考</strong><span>查看不调用模型</span></div>
+            <div class="dup-ranges" role="group" aria-label="已有报告时间范围">
+              <button type="button" data-period="1w" aria-pressed="false">近1周</button><button type="button" data-period="1m" aria-pressed="false">近1个月</button><button type="button" data-period="3m" aria-pressed="false">近3个月</button><button type="button" data-period="6m" aria-pressed="true">近6个月</button><button type="button" data-period="12m" aria-pressed="false">近12个月</button>
+            </div>
+            <p id="dup-summary" class="dup-summary" role="status" aria-live="polite"></p>
+            <div id="dup-list"></div>
+            <div id="dup-pager" class="dup-pager" hidden><button type="button" id="dup-prev" class="btn small">上一页</button><span id="dup-page"></span><button type="button" id="dup-next" class="btn small">下一页</button></div>
+            <div class="dup-foot"><span>已有结论仅供参考，请核对数据时点与研究范围。</span><button type="button" id="dup-library" class="text-button">查看全部历史</button><button type="button" id="dup-retry" class="text-button" hidden>重试</button></div>
+          </section>
+
+          <div class="control-label" id="run-mode-label">研究模式</div>
+          <div class="mode-row" role="radiogroup" aria-labelledby="run-mode-label">
+            <label class="chk"><input type="radio" name="run-mode" value="auto" checked> 自动</label>
+            <label class="chk"><input type="radio" name="run-mode" value="single"> 单篇生成</label>
+            <label class="chk"><input type="radio" name="run-mode" value="team"> 多视角研究</label>
+          </div>
+
+          <div class="field market-field">
+            <label for="run-market">市场范围</label>
+            <select id="run-market">
+              <option value="all">全部市场（A股/港股/美股/国际）</option>
+              <option value="a">仅 A 股（沪深北交所）</option>
+              <option value="hk">仅港股（HKEX）</option>
+              <option value="us">仅美股（NASDAQ/NYSE）</option>
+              <option value="a_hk">A 股 + 港股</option>
+            </select>
+          </div>
+
+          <div class="skill-params" id="skill-params"></div>
+
+          <div class="run-actions">
+            <button class="btn primary" id="btn-run" disabled>请先选择研究方法</button>
+            <button class="btn" id="btn-stop" style="display:none">停止</button>
+          </div>
+          <p class="hint run-note">每次研究计 1 次额度；没有产出的失败不计次。生成的报告会进入站内共享报告库。</p>
+        </div>
+      </div>
+      <div class="recent-work" id="recent-work" hidden><div class="panel-heading"><h2>继续你的研究</h2><button class="text-button" data-go="history">全部历史 →</button></div><div id="recent-items" class="recent-grid"></div></div>
+
+      <div class="card" id="research-output-card" style="display:none">
+        <div class="output-head">
+          <div>
+            <h2 id="output-title">研究报告</h2>
+            <div class="hint" id="output-meta"></div>
+          </div>
+          <div class="output-actions">
+            <button class="btn small" id="btn-copy">复制</button>
+            <button class="btn small" id="btn-save-md">下载 MD</button>
+          </div>
+        </div>
+        <div class="status-line" id="output-status"></div>
+        <div class="team-track" id="team-track" style="display:none"></div>
+        <article class="markdown" id="research-output"></article>
+      </div>
+    </section>
+
+    <!-- ============ 研究流水线 ============ -->
+    <section class="page" id="page-pipeline">
+      <header class="page-head">
+        <h1>研究流水线</h1>
+        <p>行业漏斗自动化：候选池 → 去劣筛选 → 买入前 Checklist → 深度研究，逐层淘汰、每步留理由</p>
+      </header>
+
+      <div class="card">
+        <div class="field-row wrap top-align pipeline-fields">
+          <div class="field grow">
+            <label for="pipe-targets">候选标的（逗号分隔）</label>
+            <input type="text" id="pipe-targets"
+                   placeholder="例如：茅台, 腾讯, 美团, 英伟达, 拼多多, 泡泡玛特">
+          </div>
+          <div class="field field-narrow">
+            <label for="pipe-deep-count">深度研究家数</label>
+            <input type="number" id="pipe-deep-count" value="1" min="1" max="5">
+            <div class="hint">入围标的中取前 N 家做深度分析，其余只保留筛选结论</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field grow">
+            <label>流水线阶段</label>
+            <div class="stage-checks">
+              <label class="chk"><input type="checkbox" id="stage-screen" checked> ① 去劣筛选</label>
+              <label class="chk"><input type="checkbox" id="stage-checklist" checked> ② 买入前 Checklist</label>
+              <label class="chk"><input type="checkbox" id="stage-deep" checked> ③ 深度研究</label>
+            </div>
+          </div>
+        </div>
+        <div class="run-actions">
+          <button class="btn primary" id="btn-pipe-run">运行流水线</button>
+          <button class="btn" id="btn-pipe-stop" style="display:none">■ 停止</button>
+        </div>
+        <p class="hint" id="pipe-status" role="status" aria-live="polite">输入 1–30 个候选标的，选择阶段后点击运行，或按回车启动。</p>
+      </div>
+
+      <div class="card" id="pipe-progress-card" style="display:none">
+        <h2>执行进度</h2>
+        <div class="pipe-stages" id="pipe-stages"></div>
+      </div>
+
+      <div class="card" id="pipe-results-card" style="display:none">
+        <h2>筛选结果</h2>
+        <div id="pipe-results"></div>
+      </div>
+
+      <div class="card" id="pipe-deep-card" style="display:none">
+        <h2 id="pipe-deep-title">深度研究</h2>
+        <div class="status-line" id="pipe-deep-status"></div>
+        <article class="markdown" id="pipe-deep-output"></article>
+      </div>
+    </section>
+
+    <!-- ============ 观点时间线 ============ -->
+    <section class="page" id="page-timeline">
+      <header class="page-head">
+        <h1>观点时间线</h1>
+        <p>同一家公司历次研究结论拉成时间轴——看观点如何演变，判断有没有漂移</p>
+      </header>
+
+      <div class="card">
+        <div class="filter-grid">
+          <div class="field grow">
+            <label for="tl-company-search">搜索公司 / 专题</label>
+            <input id="tl-company-search" type="search" placeholder="输入公司或专题名称，如腾讯" autocomplete="off" maxlength="120">
+          </div>
+          <div class="field grow">
+            <label for="tl-company">选择公司 / 专题</label>
+            <select id="tl-company" disabled><option value="">正在加载公司 / 专题…</option></select>
+          </div>
+          <div id="timeline-dates" class="report-date-filter"></div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn primary" id="btn-tl-load" disabled>查看时间线</button>
+          <button class="btn" id="btn-tl-refresh">刷新公司列表</button>
+        </div>
+        <div class="pager timeline-company-pager"><button class="btn small" id="tl-company-prev" disabled>上一组公司</button><span id="tl-company-page-info"></span><button class="btn small" id="tl-company-next" disabled>下一组公司</button></div>
+        <p class="hint" id="tl-status" role="status" aria-live="polite">公司列表来自报告库，选择后整理历次报告。</p>
+      </div>
+
+      <div class="card" id="tl-stats-card" style="display:none">
+        <h2>本页复盘摘要</h2>
+        <div class="mem-status" id="tl-stats"></div>
+      </div>
+
+      <div class="card" id="tl-chart-card" style="display:none">
+        <h2>本页评分走势</h2>
+        <div id="tl-chart"></div>
+      </div>
+
+      <div class="card" id="tl-list-card" style="display:none">
+        <h2>研究记录时间轴</h2>
+        <p class="hint">按报告日期倒序，每页 20 份。评分、摘要和结论变化仅对应当前页；打开原文可阅读完整报告。</p>
+        <div class="pager"><button class="btn small" id="tl-prev" disabled>较新一页</button><span id="tl-page-info"></span><button class="btn small" id="tl-next" disabled>较早一页</button></div>
+        <div class="tl-list" id="tl-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ 研究记忆 ============ -->
+    <section class="page" id="page-memory">
+      <header class="page-head">
+        <h1>研究记忆</h1>
+        <p>从已索引的报告中查找结论与观点，回答附带原文出处。</p>
+      </header>
+
+      <div class="card">
+        <div class="mem-status">
+          <div class="mem-stat"><b id="mem-docs">0</b><span>份报告已索引</span></div>
+          <div class="mem-stat"><b id="mem-conclusions">0</b><span>条结论已抽取</span></div>
+          <div class="mem-stat"><b id="mem-terms">0</b><span>个索引词</span></div>
+          <div class="mem-stat mem-stat-wide"><span id="mem-last">尚未索引</span></div>
+          <button class="btn" id="btn-reindex">重建索引</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>提问研究记忆</h2>
+        <div class="filter-grid">
+          <div class="field grow">
+            <label for="mem-question">研究问题</label>
+            <input type="text" id="mem-question"
+                   placeholder="例如：腾讯的护城河结论是什么？哪些公司被评为灰色地带？">
+          </div>
+          <div id="memory-dates" class="report-date-filter"></div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn primary" id="btn-ask">提问</button>
+        </div>
+        <div class="mem-hits" id="mem-hits"></div>
+        <div class="status-line" id="mem-ask-status"></div>
+        <article class="markdown" id="mem-answer"></article>
+      </div>
+
+      <div class="card">
+        <h2>结论库</h2>
+        <div class="filter-grid">
+          <div class="field grow">
+            <label for="concl-search">关键词</label>
+            <input type="search" id="concl-search" placeholder="搜索公司 / 摘要…">
+          </div>
+          <div class="field">
+            <label for="concl-group">公司 / 专题</label>
+            <select id="concl-group"><option value="">全部公司/专题</option></select>
+          </div>
+          <div class="field">
+            <label for="concl-verdict">研究结论</label>
+            <select id="concl-verdict">
+              <option value="">全部结论</option>
+              <option value="通过">通过</option>
+              <option value="不通过">不通过</option>
+              <option value="灰色">灰色地带</option>
+              <option value="观望">观望</option>
+            </select>
+          </div>
+          <div id="conclusion-dates" class="report-date-filter"></div>
+        </div>
+        <div class="status-line" id="concl-count"></div>
+        <table class="concl-table">
+          <thead>
+            <tr><th>报告</th><th>结论</th><th>评分</th><th>价格区间</th><th>摘要</th><th>来源</th></tr>
+          </thead>
+          <tbody id="concl-body"></tbody>
+        </table>
+        <div class="pager">
+          <button class="btn small" id="concl-prev">上一页</button>
+          <span id="concl-page-info"></span>
+          <button class="btn small" id="concl-next">下一页</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 研究历史 ============ -->
+    <section class="page" id="page-history">
+      <header class="page-head">
+        <h1>研究历史</h1>
+        <p>研究结果按账户保存在服务器，可随时回看、检索</p>
+      </header>
+      <div class="card">
+        <div class="filter-grid">
+          <div class="field grow">
+            <label for="history-search">关键词</label>
+            <input type="search" id="history-search" placeholder="搜索历史研究…">
+          </div>
+          <div id="history-dates" class="report-date-filter"></div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn" id="btn-history-refresh">刷新</button>
+        </div>
+      </div>
+      <div id="history-list" class="list"></div>
+      <div class="pager"><button type="button" class="btn small" id="history-prev">上一页</button><span id="history-page-info"></span><button type="button" class="btn small" id="history-next">下一页</button></div>
+    </section>
+
+    <!-- ============ 报告库 ============ -->
+    <section class="page" id="page-reports">
+      <header class="page-head">
+        <h1>报告库</h1>
+        <p>官方研报 + 站内共享研报 + 本地导入 · 汇集研究成果，随时阅读复用</p>
+      </header>
+      <div class="card">
+        <div class="filter-chips" id="report-source-chips">
+          <button class="chip active" data-source="all">全部</button>
+          <button class="chip" data-source="official">官方研报</button>
+          <button class="chip" data-source="generated">站内生成</button>
+          <button class="chip" data-source="imported">本地导入</button>
+          <span class="chip-sep"></span>
+          <button class="chip" data-scope="mine" id="chip-mine">只看我的</button>
+        </div>
+        <div class="filter-grid">
+          <div class="field grow">
+            <label for="report-search">关键词</label>
+            <input type="search" id="report-search" placeholder="搜索报告标题 / 公司 / 路径…">
+          </div>
+          <div class="field report-select">
+            <label for="report-group">公司 / 专题</label>
+            <select id="report-group"><option value="">全部公司/专题</option></select>
+          </div>
+          <div class="field report-select">
+            <label for="report-type">报告类型</label>
+            <select id="report-type"><option value="">全部类型</option></select>
+          </div>
+          <div id="report-dates" class="report-date-filter"></div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn" id="btn-report-search">查询</button>
+          <button class="btn" id="btn-report-refresh">⟳ 更新索引</button>
+          <button class="btn primary" id="btn-report-import">导入报告</button>
+          <button class="btn admin-only" id="btn-sync-upstream"
+                  style="display:none" title="从 GitHub 拉取最新 ai-berkshire">⟳ 同步官方仓库</button>
+        </div>
+        <div class="status-line" id="report-count"></div>
+        <div class="status-line admin-only" id="sync-status" style="display:none"></div>
+      </div>
+      <div id="report-list" class="list"></div>
+      <div class="pager">
+        <button class="btn small" id="report-prev">上一页</button>
+        <span id="report-page-info"></span>
+        <button class="btn small" id="report-next">下一页</button>
+      </div>
+    </section>
+
+    <!-- ============ 用户管理 ============ -->
+    <section class="page" id="page-users">
+      <header class="page-head">
+        <h1>用户管理</h1>
+        <p>会员等级与管理权限独立设置。普通管理员管理会员；初始管理员负责任命和删除。</p>
+      </header>
+      <div class="admin-summary" id="admin-summary"></div>
+      <div class="card"><div class="filter-grid user-filters"><div class="field grow"><label for="user-search">查找用户</label><input type="search" id="user-search" placeholder="搜索用户名…"></div><div class="field"><label for="user-filter">会员等级</label><select id="user-filter"><option value="">全部等级</option><option value="free">基础会员</option><option value="vip">标准会员</option><option value="svip">高级会员</option></select></div><div class="filter-inline-action"><button class="btn" id="btn-users-refresh">刷新</button></div></div>
+      <div class="table-scroll" tabindex="0" aria-label="用户列表，可横向滚动"><table class="concl-table" id="users-table">
+          <thead>
+            <tr><th>用户</th><th>等级</th><th>管理员</th><th>状态</th><th>注册时间</th><th>操作</th></tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table></div>
+      </div>
+      <div class="card"><div class="panel-heading"><h2>会员与注册规则</h2><span class="muted">修改后立即生效</span></div><form id="policy-form"><div class="policy-grid"><div class="field"><label for="policy-free">基础会员 / 天</label><input type="number" id="policy-free" min="0" max="10000" required></div><div class="field"><label for="policy-vip">标准会员 / 天</label><input type="number" id="policy-vip" min="0" max="10000" required></div><div class="field"><label for="policy-svip">高级会员 / 天</label><input type="number" id="policy-svip" min="0" max="10000" required></div></div><p class="hint">0 表示不限。管理员不受额度限制；额度按部署策略的时区每日零点恢复，删除报告不会退回额度。</p><div class="field-row wrap"><label class="chk"><input type="checkbox" id="policy-invite">注册时必须提供会员推荐码</label><button class="btn primary" type="submit">保存规则</button></div></form></div>
+
+      <!-- 数据迁移：跨环境搬迁报告与用户 -->
+      <div class="card root-only" hidden>
+        <h2>数据迁移</h2>
+        <p class="hint">导出/导入全站数据（用户、API Key、共享报告池）。跨环境迁移时使用；日常代码升级无需导入备份。
+        ai-berkshire 框架代码不在此列（新环境启动时自动拉取）。</p>
+        <div class="status-line" id="data-counts">检测中…</div>
+        <div class="field-row wrap" style="margin-top:10px">
+          <button class="btn" id="btn-data-export">⬇ 导出数据备份</button>
+          <label class="btn" for="data-import-file" style="cursor:pointer">⬆ 导入数据备份</label>
+          <input type="file" id="data-import-file" accept=".zip" style="display:none">
+          <span class="hint" id="data-msg"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-account"><header class="page-head"><div class="eyebrow">MY ACCOUNT</div><h1>我的账户</h1><p>查看会员权益与用量，管理登录安全，邀请伙伴加入研究。</p></header>
+      <div class="account-overview" id="account-overview"></div>
+      <div class="account-columns"><div class="card"><h2>账户安全</h2><form id="password-form"><div class="field"><label for="old-password">当前密码</label><input id="old-password" type="password" autocomplete="current-password" required></div><div class="field"><label for="new-password">新密码</label><input id="new-password" type="password" minlength="8" maxlength="256" autocomplete="new-password" placeholder="至少 8 位" required></div><div class="field"><label for="confirm-password">确认新密码</label><input id="confirm-password" type="password" minlength="8" autocomplete="new-password" required></div><p class="hint">修改密码后，所有设备需要重新登录。</p><button type="submit" class="btn primary">更新密码</button></form></div>
+      <div class="card"><div class="panel-heading"><h2>邀请伙伴</h2><button id="btn-invite" class="btn small">生成邀请链接</button></div><p class="hint">邀请一次有效，有效期由平台策略配置。请仅分享给你信任的人。</p><div id="invite-list" class="invite-list"></div></div></div>
+      <div class="card"><h2>最近研究用量</h2><p class="hint">研究、流水线、记忆问答和深度抽取统一计次。有部分产出的中断计 1 次，未产出的失败不计次。</p><div id="usage-list"></div></div>
+    </section>
+    <!-- ============ 设置 ============ -->
+    <section class="page" id="page-settings">
+      <header class="page-head">
+        <h1>模型设置</h1>
+        <p>管理你自己的模型连接。配置保存在服务器，按账户隔离，密钥仅脱敏展示。</p>
+      </header>
+
+      <div class="cfg-list" id="cfg-list"></div>
+
+      <div class="card cfg-editor">
+        <h2 id="cfg-editor-title">编辑模型配置</h2>
+
+        <div class="field-row wrap">
+          <div class="field grow">
+            <label for="cfg-name">配置名称</label>
+            <input type="text" id="cfg-name" placeholder="例如：DeepSeek">
+          </div>
+          <div class="field grow">
+            <label for="cfg-provider">模型服务商</label>
+            <!-- 官方 Base URL 于 2026-10-24 核对；协议均与当前客户端匹配。
+                 国内：api-docs.deepseek.com、help.aliyun.com、volcengine.com/docs、
+                 docs.bigmodel.cn、platform.moonshot.cn、ai.baidu.com、
+                 platform.minimaxi.com、cloud.tencent.com/document。
+                 其他：docs.docker.com、platform.openai.com、docs.anthropic.com、
+                 ai.google.dev、docs.x.ai、docs.mistral.ai、openrouter.ai/docs。 -->
+            <select id="cfg-provider">
+              <optgroup label="中国主流（8）">
+                <option value="deepseek" data-protocol="openai" data-base-url="https://api.deepseek.com" data-model-placeholder="deepseek-flash / deepseek-v4-pro">DeepSeek</option>
+                <option value="qwen" data-protocol="openai" data-base-url="https://dashscope.aliyuncs.com/compatible-mode/v1" data-model-placeholder="qwen3.8-max 等千问模型 ID">阿里云百炼 · 千问</option>
+                <option value="doubao" data-protocol="openai" data-base-url="https://ark.cn-beijing.volces.com/api/v3" data-model-placeholder="填写方舟模型或推理接入点 ID">火山方舟 · 豆包</option>
+                <option value="zhipu" data-protocol="openai" data-base-url="https://open.bigmodel.cn/api/paas/v4" data-model-placeholder="glm-5.3 / glm-5.3-flash">智谱 AI · GLM</option>
+                <option value="moonshot" data-protocol="openai" data-base-url="https://api.moonshot.cn/v1" data-model-placeholder="kimi-k3.1-pro 等 Kimi 模型 ID">Moonshot · Kimi</option>
+                <option value="qianfan" data-protocol="openai" data-base-url="https://qianfan.baidubce.com/v2" data-model-placeholder="填写千帆模型 ID">百度智能云 · 千帆</option>
+                <option value="minimax" data-protocol="openai" data-base-url="https://api.minimax.cn/v1" data-model-placeholder="MiniMax-M3.1-Flash">MiniMax</option>
+                <option value="hunyuan" data-protocol="openai" data-base-url="https://api.hunyuan.cloud.tencent.com/v1" data-model-placeholder="hunyuan-turbos-latest 等模型 ID">腾讯云 · 混元</option>
+              </optgroup>
+              <optgroup label="全球及聚合服务（7）">
+                <option value="opencode-go" data-protocol="openai" data-base-url="https://opencode.ai/zen/go/v1" data-model-placeholder="填写 OpenCode Go 支持的模型 ID">OpenCode Go</option>
+                <option value="openai" data-protocol="openai" data-base-url="https://api.openai.com/v1" data-model-placeholder="gpt-5.4" selected>OpenAI</option>
+                <option value="anthropic" data-protocol="anthropic" data-base-url="https://api.anthropic.com" data-model-placeholder="claude-sonnet-5-5">Anthropic · Claude</option>
+                <option value="gemini" data-protocol="openai" data-base-url="https://generativelanguage.googleapis.com/v1beta/openai" data-model-placeholder="gemini-3.8-flash">Google · Gemini</option>
+                <option value="xai" data-protocol="openai" data-base-url="https://api.x.ai/v1" data-model-placeholder="grok-4.7">xAI · Grok</option>
+                <option value="mistral" data-protocol="openai" data-base-url="https://api.mistral.ai/v1" data-model-placeholder="mistral-large-latest">Mistral AI</option>
+                <option value="openrouter" data-protocol="openai" data-base-url="https://openrouter.ai/api/v1" data-model-placeholder="填写 provider/model 模型 ID">OpenRouter</option>
+              </optgroup>
+              <optgroup label="其他">
+                <option value="custom-openai" data-protocol="openai" data-model-placeholder="填写 OpenAI 兼容模型 ID">自定义 OpenAI 兼容地址</option>
+                <option value="custom-anthropic" data-protocol="anthropic" data-model-placeholder="填写 Anthropic 兼容模型 ID">自定义 Anthropic 兼容地址</option>
+                <option value="demo" data-protocol="demo" data-model-placeholder="演示模式无需 Key">演示模式（无需 Key）</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field grow">
+            <label for="cfg-base-url">Base URL</label>
+            <input type="text" id="cfg-base-url" placeholder="https://api.openai.com/v1">
+            <div class="hint">选择服务商会自动填入已核对的官方地址；如使用专属地域、业务空间或代理，仍可手动修改。</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field grow">
+            <label for="cfg-api-key">API Key</label>
+            <input type="password" id="cfg-api-key" placeholder="留空表示保留">
+            <div class="hint" id="cfg-key-status">当前：未配置</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field grow">
+            <label for="cfg-model">模型名称</label>
+            <input type="text" id="cfg-model" placeholder="gpt-4o / claude-sonnet-4-5 / deepseek-chat">
+          </div>
+        </div>
+
+        <div class="field-row wrap">
+          <div class="field grow">
+            <label for="cfg-thinking">思考强度</label>
+            <select id="cfg-thinking">
+              <option>高（默认）</option>
+              <option>中</option>
+              <option>低</option>
+              <option>关闭</option>
+            </select>
+          </div>
+          <div class="field grow">
+            <label for="cfg-websearch">联网搜索方式</label>
+            <select id="cfg-websearch">
+              <option>模型侧联网优先（失败自动回退自建搜索）</option>
+              <option>仅自建搜索</option>
+              <option>关闭</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Token 预设核对于 2026-10-24；保留各平台不同的精确计数。
+             https://platform.claude.com/docs/en/models/overview
+             https://developers.openai.com/api/docs/models/gpt-5.4
+             https://ai.google.dev/gemini-api/docs/tokens
+             https://api-docs.deepseek.com/api/create-chat-completion/ -->
+        <div class="field-row wrap">
+          <div class="field grow">
+            <label for="cfg-max-in">最大输入 Token（上下文）</label>
+            <select id="cfg-max-in" aria-describedby="cfg-token-hint">
+              <option value="不限">不限（沿用默认策略）</option>
+              <option value="4096">4K（4,096）</option>
+              <option value="8192">8K（8,192）</option>
+              <option value="16384">16K（16,384）</option>
+              <option value="32768">32K（32,768）</option>
+              <option value="65536">64K（65,536）</option>
+              <option value="128000">128K（128,000）</option>
+              <option value="131072">128K（131,072）</option>
+              <option value="200000">200K（200,000）</option>
+              <option value="256000">256K（256,000）</option>
+              <option value="262144">256K（262,144）</option>
+              <option value="400000">400K（400,000）</option>
+              <option value="524288">512K（524,288）</option>
+              <option value="1000000">1M（1,000,000）</option>
+              <option value="1048576">1M（1,048,576）</option>
+              <option value="1050000">1.05M（1,050,000）</option>
+              <option value="2097152">2M（2,097,152）</option>
+            </select>
+          </div>
+          <div class="field grow">
+            <label for="cfg-max-out">最大输出 Token</label>
+            <select id="cfg-max-out" aria-describedby="cfg-token-hint">
+              <option value="不限">不限（沿用默认策略）</option>
+              <option value="1024">1K（1,024）</option>
+              <option value="2048">2K（2,048）</option>
+              <option value="4096">4K（4,096）</option>
+              <option value="8192">8K（8,192）</option>
+              <option value="16384">16K（16,384）</option>
+              <option value="32768">32K（32,768）</option>
+              <option value="64000">64K（64,000）</option>
+              <option value="65536">64K（65,536）</option>
+              <option value="128000">128K（128,000）</option>
+              <option value="131072">128K（131,072）</option>
+              <option value="262144">256K（262,144）</option>
+              <option value="393216">384K（393,216）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hint" id="cfg-token-hint">按模型及接入平台支持的上限选择，括号内为实际 Token 数。部分模型的输入与输出共用上下文，需预留输出空间；“不限”仍受模型限制。</div>
+
+        <div class="field-row">
+          <label class="chk"><input type="checkbox" id="cfg-enable-thinking" checked> 启用深度思考</label>
+          <label class="chk"><input type="checkbox" id="cfg-enable-websearch" checked> 启用网页搜索</label>
+          <label class="chk"><input type="checkbox" id="cfg-clear-key"> 清除当前 Key</label>
+        </div>
+
+        <div class="headers-block">
+          <div class="headers-head">
+            <label>自定义请求头</label>
+            <button class="btn small" id="btn-add-header">＋ 添加请求头</button>
+          </div>
+          <div class="hint">部分供应商要求特定请求头（如 opencode 强制要求），否则返回 400。最多 8 条。</div>
+          <div id="headers-rows"></div>
+        </div>
+
+        <div class="field-row">
+          <button class="btn" id="btn-cfg-cancel">取消</button>
+          <button class="btn" id="btn-test-conn" title="测试当前启用且已保存的模型配置">测试启用配置</button>
+          <button class="btn primary" id="btn-save-settings">保存</button>
+          <span class="hint" id="settings-msg"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>关于</h2>
+        <p>AI Berkshire Web 封装 <strong>AI Berkshire</strong>（巴菲特-芒格-段永平-李录四大师投研框架）的研究技能，
+        支持网页端一键研究、全站共享报告池、研究记忆问答、观点时间线、行业漏斗流水线与跨环境数据迁移。</p>
+        <p class="hint">免责声明：本工具仅供学习研究，不构成投资建议。投资有风险，决策需谨慎。</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- 报告阅读弹层 -->
+<div class="modal" id="report-modal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
+    <div class="modal-head">
+      <div class="reader-heading"><h2 id="modal-title">报告</h2><div class="hint" id="modal-meta"></div></div>
+      <div class="reader-toolbar">
+        <div class="reader-actions" role="group" aria-label="报告操作">
+          <button type="button" class="btn small reader-icon-button" id="reader-copy" aria-label="复制报告正文" data-tooltip="复制报告正文"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M12 4V3H3v9h1"/></svg></button>
+          <button type="button" class="btn small reader-icon-button" id="reader-download" aria-label="下载 Markdown 报告" data-tooltip="下载 Markdown 报告"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v10m-4-4 4 4 4-4M3 13v4h14v-4"/></svg></button>
+          <button type="button" class="btn small reader-icon-button" id="reader-focus" aria-label="全屏阅读" data-tooltip="全屏阅读" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="reader-expand-icon" d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4"/><path class="reader-contract-icon" d="M3 7h4V3m6 0v4h4M7 17v-4H3m14 0h-4v4"/></svg></button>
+        </div>
+        <span class="reader-toolbar-divider" aria-hidden="true"></span>
+        <button type="button" class="btn small reader-icon-button" id="modal-close" aria-label="关闭报告" data-tooltip="关闭报告（Esc）"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+      </div>
+    </div>
+    <div class="reader-body"><article class="markdown" id="modal-content"></article></div>
+  </div>
+</div>
+
+<dialog id="report-import-dialog" aria-labelledby="report-import-title" aria-describedby="report-import-help">
+  <div class="import-head"><h2 id="report-import-title">导入本地报告</h2><button class="btn small" id="report-import-close" aria-label="关闭导入报告">关闭 ×</button></div>
+  <div class="import-content">
+  <div class="import-intro">
+    <p id="report-import-help">选择本机 AI Berkshire 的 <b>reports 文件夹</b>，连同子目录一起导入；也可多选 Markdown 文件。先预览，确认后加入全站共享报告库。</p>
+    <p class="hint">同一公司、同一天、同类型的报告，只要内容不同均可导入；相同正文自动去重，即使文件名或路径不同也只导入一份。同一路径正文修改后追加新版本。自动识别标题、公司和日期。仅导入 .md / .markdown，跳过 README、索引和隐藏文件；单份最大 4 MiB。不调用模型，不消耗研究额度。</p>
+    <div class="field-row wrap"><button class="btn" id="report-import-folder">选择 reports 文件夹</button><button class="btn" id="report-import-files">选择报告文件</button><span class="hint" id="report-import-selection">尚未选择文件</span></div>
+    <input type="file" id="report-import-directory-input" webkitdirectory multiple hidden aria-label="选择报告文件夹">
+    <input type="file" id="report-import-files-input" accept=".md,.markdown" multiple hidden aria-label="选择 Markdown 报告">
+  </div>
+  <div class="import-toolbar"><label class="chk"><input type="checkbox" id="report-import-all" disabled>全选可导入报告</label><span id="report-import-summary" role="status" aria-live="polite">选择后显示导入预览</span></div>
+  <div id="report-import-list" class="import-list"><p class="hint">文件夹只会在你选择后读取，无需填写电脑磁盘路径。</p></div>
+  </div>
+  <div class="import-footer"><span class="hint" id="report-import-progress" role="status" aria-live="polite"></span><button class="btn primary" id="report-import-confirm" disabled>确认导入</button></div>
+</dialog>
+<dialog id="action-dialog" aria-labelledby="dialog-title"><form method="dialog"><h2 id="dialog-title"></h2><p id="dialog-description"></p><label id="dialog-label" for="dialog-input" hidden>新密码（至少 8 位）</label><input id="dialog-input" type="password" autocomplete="new-password" minlength="8" maxlength="256" hidden><div class="dialog-actions"><button type="button" class="btn" id="dialog-cancel">取消</button><button type="submit" class="btn primary" id="dialog-accept">确认</button></div></form></dialog>
+<script src="/static/workspace.js"></script>
+<script src="/static/app.js"></script>
+<script src="/static/report-import.js"></script>
+</body>
+</html>
